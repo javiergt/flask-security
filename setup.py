@@ -3,6 +3,18 @@
 """Simple security for Flask apps."""
 
 from setuptools import find_packages, setup
+from setuptools.command.install import install
+
+
+class InstallWithCompile(install):
+    def run(self):
+        from babel.messages.frontend import compile_catalog
+        compiler = compile_catalog(self.distribution)
+        option_dict = self.distribution.get_option_dict('compile_catalog')
+        compiler.domain = [option_dict['domain'][1]]
+        compiler.directory = option_dict['directory'][1]
+        compiler.run()
+        super().run()
 
 readme = open('README.rst').read()
 
@@ -59,6 +71,7 @@ install_requires = [
 packages = find_packages()
 
 setup(
+    cmdclass={'install': InstallWithCompile},
     name='Flask-Security',
     version='3.0.0',
     description=__doc__,
